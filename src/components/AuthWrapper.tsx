@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useAuth } from '../hooks/useAuth';
 import { RootState } from '../store';
 import { setTheme } from '../store/slices/themeSlice';
+import { setUser } from '../store/slices/authSlice';
 import LandingPage from './LandingPage';
 import LoadingSpinner from './common/LoadingSpinner';
 
@@ -10,10 +11,29 @@ interface AuthWrapperProps {
   children: ReactNode;
 }
 
+
 const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
   const dispatch = useDispatch();
   const { isAuthenticated, loading } = useAuth();
   const { mode } = useSelector((state: RootState) => state.theme);
+
+  // On mount, check for accessToken and user in query params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const accessToken = params.get('accessToken');
+    const userParam = params.get('user');
+    if (accessToken && userParam) {
+      localStorage.setItem('auth_token', accessToken);
+      try {
+        const user = JSON.parse(decodeURIComponent(userParam));
+        dispatch(setUser(user));
+      } catch (e) {
+        // ignore
+      }
+      // Remove query params from URL and redirect to landing page
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [dispatch]);
 
   // Initialize theme on app load
   useEffect(() => {
