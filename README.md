@@ -4,7 +4,7 @@ A modern AI-powered narrative and brand story generator web application. Built w
 
 ## 🚀 Live Demo
 
-[Live App URL](https://your-live-app-url.com)
+[Live App URL](https://varune-fe.vercel.app/)
 
 ---
 
