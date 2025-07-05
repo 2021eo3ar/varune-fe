@@ -12,17 +12,21 @@ const API_BASE_URL =
 class APIClient {
   public async request<T>(config: AxiosRequestConfig = {}): Promise<T> {
     try {
+      // Add Authorization header if token exists
+      const token = localStorage.getItem('auth_token');
+      const headers = {
+        ...(config.headers || {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
       const response = await axios({
         baseURL: API_BASE_URL,
         withCredentials: true,
         ...config,
+        headers,
       });
-
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
         throw new Error(
           error?.response?.data.message || `HTTP ${error?.response?.status}`,
         );

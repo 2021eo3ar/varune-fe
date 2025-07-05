@@ -32,10 +32,15 @@ export const logout = createAsyncThunk(
       await axios.post(`${import.meta.env.VITE_API_URL}/auth/logout`, {}, { withCredentials: true });
       // Proactively clear cookies on the client (for SPA logout UX)
       clearAuthCookies();
+      // Clear localStorage auth_token and user info
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
       return null;
     } catch (error: any) {
       // Still try to clear cookies even if backend fails
       clearAuthCookies();
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
       return rejectWithValue(error?.response?.data?.message || error.message || 'Logout failed');
     }
   }
