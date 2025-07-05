@@ -52,9 +52,8 @@ A modern AI-powered narrative and brand story generator web application. Built w
 Create a `.env` file in the root with the following:
 
 ```env
-VITE_API_BASE_URL=http://localhost:3001/api
-VITE_API_URL=http://localhost:3001
-VITE_GOOGLE_CLIENT_ID=your-google-client-id
+VITE_API_BASE_URL=http://localhost:3001/api/v1 || or replace with your be port
+VITE_API_URL=http://localhost:3001/api/v1 || or replace with your be port
 ```
 
 ---
@@ -102,7 +101,7 @@ graph TD;
 ---
 
 ## 📝 Credits & License
-- Built by [Your Name](https://github.com/your-username)
+- Built by [Your Name](https://github.com/2021eo3ar)
 - MIT License
 
 ---
