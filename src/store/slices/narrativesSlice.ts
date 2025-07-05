@@ -1,5 +1,10 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import { NarrativesState, ChatMessage, NarrativeParameters } from "../../types";
+import {
+  NarrativesState,
+  ChatMessage,
+  NarrativeParameters,
+  ChatThread,
+} from "../../types";
 import { narrativesAPI } from "../../services/api";
 import { decrementCredits } from "./creditsSlice";
 
@@ -60,7 +65,11 @@ export const fetchChatHistory = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await narrativesAPI.getChatHistory();
-      return response;
+      return response.sort((a, b) => {
+        return (
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        );
+      });
     } catch (error) {
       return rejectWithValue(
         (error as Error).message || "Failed to fetch chat history",
@@ -85,6 +94,9 @@ const narrativesSlice = createSlice({
     setIsStreaming: (state, action: PayloadAction<boolean>) => {
       state.isStreaming = action.payload;
     },
+    addHistoryItem: (state, action: PayloadAction<ChatThread>) => {
+      state.chatHistory = [action.payload, ...state.chatHistory];
+    },
     clearError: (state) => {
       state.error = null;
     },
@@ -100,9 +112,24 @@ const narrativesSlice = createSlice({
         state.error = null;
       })
       .addCase(generateNarrative.fulfilled, (state, action) => {
+        const msg = action.payload.message.content;
+        const threadMsgs = [...state.currentThread, action.payload.message];
+        const match = msg?.match(/\*\*Title of Narrative:\*\*\s*(.+)/);
+        const title = match ? match[1]?.trim()?.replace(/"/g, "") : msg;
+
         state.isGenerating = false;
         state.currentChatId = action.payload.chatId;
         state.currentThread.push(action.payload.message);
+        state.chatHistory = [
+          {
+            id: action.payload.chatId,
+            messages: threadMsgs,
+            title,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          ...state.chatHistory,
+        ];
       })
       .addCase(generateNarrative.rejected, (state, action) => {
         state.isGenerating = false;
@@ -115,9 +142,14 @@ const narrativesSlice = createSlice({
         state.error = null;
       })
       .addCase(continueNarrative.fulfilled, (state, action) => {
+        const threadMsgs = [...state.currentThread, action.payload.message];
         state.isGenerating = false;
-        // state.currentChatId = action.payload.chatId;
         state.currentThread.push(action.payload.message);
+        state.chatHistory[0] = {
+          ...state.chatHistory[0],
+          messages: threadMsgs,
+          updatedAt: new Date().toISOString(),
+        };
       })
       .addCase(continueNarrative.rejected, (state, action) => {
         state.isGenerating = false;
@@ -145,5 +177,6 @@ export const {
   clearError,
   setIsStreaming,
   setCurrentChatID,
+  addHistoryItem,
 } = narrativesSlice.actions;
 export default narrativesSlice.reducer;

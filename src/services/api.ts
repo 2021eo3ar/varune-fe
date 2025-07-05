@@ -12,21 +12,24 @@ const API_BASE_URL =
 class APIClient {
   public async request<T>(config: AxiosRequestConfig = {}): Promise<T> {
     try {
-      // Add Authorization header if token exists
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem("auth_token");
       const headers = {
         ...(config.headers || {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       };
+
       const response = await axios({
         baseURL: API_BASE_URL,
         withCredentials: true,
         ...config,
         headers,
       });
+
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
         throw new Error(
           error?.response?.data.message || `HTTP ${error?.response?.status}`,
         );
@@ -86,11 +89,18 @@ class CreditsAPI extends APIClient {
         email: string;
         publicId: string;
         profileImage: string;
+        createdAt: string;
       };
     }>({ url: "/narratives/userCredits" });
     return {
       remaining: res?.data?.credits,
       lastReset: res?.data?.lastCreditReset,
+
+      email: res?.data?.email,
+      name: res?.data?.name,
+      publicId: res?.data?.publicId,
+      profileImage: res?.data?.profileImage,
+      createdAt: res?.data?.createdAt,
     };
   }
 }
@@ -154,6 +164,7 @@ class NarrativesAPI extends APIClient {
     const data = await this.request<{
       allChats: {
         chatId: string;
+        title: string;
         chats: {
           id: number;
           chatId: string;
@@ -174,18 +185,29 @@ class NarrativesAPI extends APIClient {
       method: "GET",
     });
 
-    return data?.allChats?.map((chat, index) => ({
-      id: chat?.chatId,
-      title: "Narration Chat " + (data?.allChats?.length - index),
-      messages: chat?.chats?.map((message) => ({
-        id: String(message?.id),
-        type: message?.messageRole,
-        content: message?.chat?.content,
-        timestamp: message?.updatedAt,
-      })),
-      createdAt: chat?.chats?.[0]?.createdAt,
-      updatedAt: chat?.chats?.[chat?.chats?.length - 1]?.updatedAt,
-    })) as ChatThread[];
+    return data?.allChats?.map((chat) => {
+      const text = chat?.chats?.[1]?.chat?.content;
+      const match = text?.match(/\*\*Title of Narrative:\*\*\s*(.+)/);
+      const title = match ? match[1]?.trim()?.replace(/"/g, "") : text;
+      return {
+        id: chat?.chatId,
+        title: (chat.title || title) ?? "",
+        messages: chat?.chats?.map((message) => ({
+          id: String(message?.id),
+          type: message?.messageRole,
+          content:
+            message?.messageRole === "assistant"
+              ? message?.chat?.content?.replace(
+                  /^[\s\S]*?\*\*Narrative:\*\*\s*/i,
+                  "",
+                )
+              : message?.chat?.content,
+          timestamp: message?.updatedAt,
+        })),
+        createdAt: chat?.chats?.[0]?.createdAt,
+        updatedAt: chat?.chats?.[chat?.chats?.length - 1]?.updatedAt,
+      };
+    }) as ChatThread[];
   }
 }
 

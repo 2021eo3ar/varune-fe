@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { CreditsState } from "../../types";
 import { creditsAPI } from "../../services/api";
+import { setUser } from "./authSlice";
 
 const initialState: CreditsState = {
   remaining: 0,
@@ -10,10 +11,34 @@ const initialState: CreditsState = {
 
 export const fetchCredits = createAsyncThunk(
   "credits/fetchCredits",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, dispatch }) => {
     try {
       const response = await creditsAPI.getCredits();
-      return response;
+
+      const {
+        email,
+        name,
+        publicId,
+        profileImage,
+        remaining,
+        lastReset,
+        createdAt,
+      } = response;
+
+      dispatch(
+        setUser({
+          id: publicId,
+          googleId: publicId,
+          publicId,
+          name,
+          email,
+          profileImage,
+          createdAt,
+          credits: remaining,
+        }),
+      );
+
+      return { remaining, lastReset };
     } catch (error) {
       return rejectWithValue(
         (error as Error).message || "Failed to fetch credits",

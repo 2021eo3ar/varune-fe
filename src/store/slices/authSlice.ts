@@ -1,8 +1,8 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { AuthState, UserType } from '../../types';
-import { authAPI } from '../../services/api';
-import axios from 'axios';
-import { clearAuthCookies } from './_logoutHelper';
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { AuthState, UserType } from "../../types";
+import { authAPI } from "../../services/api";
+import axios from "axios";
+import { clearAuthCookies } from "./_logoutHelper";
 
 const initialState: AuthState = {
   user: null,
@@ -12,58 +12,59 @@ const initialState: AuthState = {
 };
 
 export const loginWithGoogle = createAsyncThunk(
-  'auth/loginWithGoogle',
+  "auth/loginWithGoogle",
   async (credential: string, { rejectWithValue }) => {
     try {
       const response = await authAPI.login(credential);
-      localStorage.setItem('auth_token', response.token);
+      localStorage.setItem("auth_token", response.token);
       return response.user;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Login failed');
+      return rejectWithValue(error.message || "Login failed");
     }
-  }
+  },
 );
 
 export const logout = createAsyncThunk(
-  'auth/logout',
+  "auth/logout",
   async (_, { rejectWithValue }) => {
     try {
       // Call backend logout endpoint to clear cookies
-      await axios.post(`${import.meta.env.VITE_API_URL}/auth/logout`, {}, { withCredentials: true });
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/auth/logout`,
+        {},
+        { withCredentials: true },
+      );
       // Proactively clear cookies on the client (for SPA logout UX)
       clearAuthCookies();
-      // Clear localStorage auth_token and user info
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user');
       return null;
     } catch (error: any) {
       // Still try to clear cookies even if backend fails
       clearAuthCookies();
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user');
-      return rejectWithValue(error?.response?.data?.message || error.message || 'Logout failed');
+      return rejectWithValue(
+        error?.response?.data?.message || error.message || "Logout failed",
+      );
     }
-  }
+  },
 );
 
 export const validateToken = createAsyncThunk(
-  'auth/validateToken',
+  "auth/validateToken",
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('auth_token');
-      if (!token) throw new Error('No token found');
-      
+      const token = localStorage.getItem("auth_token");
+      if (!token) throw new Error("No token found");
+
       const response = await authAPI.validateToken(token);
       return response.user;
     } catch (error: any) {
-      localStorage.removeItem('auth_token');
-      return rejectWithValue(error.message || 'Token validation failed');
+      localStorage.removeItem("auth_token");
+      return rejectWithValue(error.message || "Token validation failed");
     }
-  }
+  },
 );
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     clearError: (state) => {
@@ -83,7 +84,7 @@ const authSlice = createSlice({
       })
       .addCase(loginWithGoogle.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+        // state.user = action.payload;
         state.isAuthenticated = true;
         state.error = null;
       })
@@ -105,7 +106,7 @@ const authSlice = createSlice({
       })
       .addCase(validateToken.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+        // state.user = action.payload;
         state.isAuthenticated = true;
         state.error = null;
       })

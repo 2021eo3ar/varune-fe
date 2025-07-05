@@ -22,9 +22,9 @@ const NarrativeForm: React.FC<NarrativeFormProps> = ({
     // Long narrative fields
     toneOfVoice: "",
     brandPersonality: "",
-    competitorAnalysis: "",
-    marketPositioning: "",
-    successMetrics: "",
+    brandVision: "",
+    keyProducts: "",
+    brandStory: "",
   });
 
   const [errors, setErrors] = useState<Partial<NarrativeParameters>>({});
@@ -50,12 +50,12 @@ const NarrativeForm: React.FC<NarrativeFormProps> = ({
         newErrors.toneOfVoice = "Tone of voice is required";
       if (!parameters.brandPersonality?.trim())
         newErrors.brandPersonality = "Brand personality is required";
-      if (!parameters.competitorAnalysis?.trim())
-        newErrors.competitorAnalysis = "Competitor analysis is required";
-      if (!parameters.marketPositioning?.trim())
-        newErrors.marketPositioning = "Market positioning is required";
-      if (!parameters.successMetrics?.trim())
-        newErrors.successMetrics = "Success metrics are required";
+      if (!parameters.brandVision?.trim())
+        newErrors.brandVision = "Brand vision is required";
+      if (!parameters.keyProducts?.trim())
+        newErrors.keyProducts = "Key products are required";
+      if (!parameters.brandStory?.trim())
+        newErrors.brandStory = "Brand story is required";
     }
 
     setErrors(newErrors);
@@ -72,7 +72,7 @@ const NarrativeForm: React.FC<NarrativeFormProps> = ({
 
   const handleInputChange = (
     field: keyof NarrativeParameters,
-    value: string,
+    value: string
   ) => {
     setParameters((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
@@ -286,72 +286,72 @@ const NarrativeForm: React.FC<NarrativeFormProps> = ({
 
                 <div className="mt-4">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Competitor Analysis *
+                    Brand Vision *
                   </label>
                   <textarea
-                    value={parameters.competitorAnalysis || ""}
+                    value={parameters.brandVision || ""}
                     onChange={(e) =>
-                      handleInputChange("competitorAnalysis", e.target.value)
+                      handleInputChange("brandVision", e.target.value)
                     }
-                    placeholder="e.g., Unlike competitors who focus solely on features, we prioritize user experience"
+                    placeholder="e.g., To be the global leader in sustainable fashion"
                     rows={3}
                     className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 ${
-                      errors.competitorAnalysis
+                      errors.brandVision
                         ? "border-red-500"
                         : "border-gray-300 dark:border-gray-600"
                     }`}
                   />
-                  {errors.competitorAnalysis && (
+                  {errors.brandVision && (
                     <p className="text-red-500 text-xs mt-1">
-                      {errors.competitorAnalysis}
+                      {errors.brandVision}
                     </p>
                   )}
                 </div>
 
                 <div className="mt-4">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Market Positioning *
+                    Key Products *
                   </label>
                   <textarea
-                    value={parameters.marketPositioning || ""}
+                    value={parameters.keyProducts || ""}
                     onChange={(e) =>
-                      handleInputChange("marketPositioning", e.target.value)
+                      handleInputChange("keyProducts", e.target.value)
                     }
-                    placeholder="e.g., Premium but accessible, targeting the sophisticated yet practical consumer"
+                    placeholder="e.g., Eco-friendly sneakers, recycled material backpacks"
                     rows={3}
                     className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 ${
-                      errors.marketPositioning
+                      errors.keyProducts
                         ? "border-red-500"
                         : "border-gray-300 dark:border-gray-600"
                     }`}
                   />
-                  {errors.marketPositioning && (
+                  {errors.keyProducts && (
                     <p className="text-red-500 text-xs mt-1">
-                      {errors.marketPositioning}
+                      {errors.keyProducts}
                     </p>
                   )}
                 </div>
 
                 <div className="mt-4">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Success Metrics *
+                    Brand Story *
                   </label>
                   <textarea
-                    value={parameters.successMetrics || ""}
+                    value={parameters.brandStory || ""}
                     onChange={(e) =>
-                      handleInputChange("successMetrics", e.target.value)
+                      handleInputChange("brandStory", e.target.value)
                     }
-                    placeholder="e.g., Brand awareness, customer satisfaction scores, market share growth"
+                    placeholder="e.g., Founded by visionaries who wanted to change the world through design..."
                     rows={3}
                     className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 ${
-                      errors.successMetrics
+                      errors.brandStory
                         ? "border-red-500"
                         : "border-gray-300 dark:border-gray-600"
                     }`}
                   />
-                  {errors.successMetrics && (
+                  {errors.brandStory && (
                     <p className="text-red-500 text-xs mt-1">
-                      {errors.successMetrics}
+                      {errors.brandStory}
                     </p>
                   )}
                 </div>

@@ -40,6 +40,9 @@ export interface NarrativeParameters {
   competitorAnalysis?: string;
   marketPositioning?: string;
   successMetrics?: string;
+  keyProducts?:string;
+  brandVision?:string
+  brandStory? :string
 }
 
 export interface AuthState {

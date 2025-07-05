@@ -1,35 +1,33 @@
-import React, { ReactNode, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useAuth } from '../hooks/useAuth';
-import { RootState } from '../store';
-import { setTheme } from '../store/slices/themeSlice';
-import { setUser } from '../store/slices/authSlice';
-import LandingPage from './LandingPage';
-import LoadingSpinner from './common/LoadingSpinner';
+import React, { ReactNode, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useAuth } from "../hooks/useAuth";
+import { RootState } from "../store";
+import { setTheme } from "../store/slices/themeSlice";
+import LandingPage from "./LandingPage";
+import LoadingSpinner from "./common/LoadingSpinner";
+import { setUser } from "../store/slices/authSlice";
 
 interface AuthWrapperProps {
   children: ReactNode;
 }
-
 
 const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
   const dispatch = useDispatch();
   const { isAuthenticated, loading } = useAuth();
   const { mode } = useSelector((state: RootState) => state.theme);
 
-  // On mount, check for accessToken and user in query params
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const accessToken = params.get('accessToken');
-    const userParam = params.get('user');
-    console.log(userParam)
+    const accessToken = params.get("accessToken");
+    const userParam = params.get("user");
+    console.log(userParam);
     if (accessToken && userParam) {
-      localStorage.setItem('auth_token', accessToken);
+      localStorage.setItem("auth_token", accessToken);
       try {
         const user = JSON.parse(decodeURIComponent(userParam));
         dispatch(setUser(user));
-      } catch (e) {
-        // ignore
+      } catch {
+        //
       }
       // Remove query params from URL and redirect to landing page
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -38,22 +36,24 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
 
   // Initialize theme on app load
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'light' || savedTheme === 'dark') {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "light" || savedTheme === "dark") {
       dispatch(setTheme(savedTheme));
     } else {
       // Check system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      dispatch(setTheme(prefersDark ? 'dark' : 'light'));
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)",
+      ).matches;
+      dispatch(setTheme(prefersDark ? "dark" : "light"));
     }
   }, [dispatch]);
 
   // Apply theme to document
   useEffect(() => {
-    if (mode === 'dark') {
-      document.documentElement.classList.add('dark');
+    if (mode === "dark") {
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove("dark");
     }
   }, [mode]);
 

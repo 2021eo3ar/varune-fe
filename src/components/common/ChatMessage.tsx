@@ -3,13 +3,19 @@ import { User, Sparkles, Copy, Check } from "lucide-react";
 import { ChatMessage as ChatMessageType, RootState } from "../../types";
 import { setIsStreaming } from "../../store/slices/narrativesSlice";
 import { useDispatch, useSelector } from "react-redux";
+import { formatTime } from "../../utils";
 
 interface ChatMessageProps {
   message: ChatMessageType;
   isLatest?: boolean;
+  onStream?: () => void;
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLatest }) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({
+  message,
+  isLatest,
+  onStream,
+}) => {
   const [copied, setCopied] = React.useState(false);
   const [displayedText, setDisplayedText] = React.useState("");
   const dispatch = useDispatch();
@@ -27,15 +33,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLatest }) => {
     }
   };
 
-  const formatTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  console.log(message);
-
   React.useEffect(() => {
     if (!isLatest) {
       setDisplayedText(message?.content);
@@ -45,6 +42,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLatest }) => {
     let i = 0;
     const interval = setInterval(() => {
       setDisplayedText((prev) => prev + message.content[i]);
+      onStream?.();
       i++;
       if (i >= message.content.length) {
         clearInterval(interval);

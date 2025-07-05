@@ -7,6 +7,7 @@ import {
   setCurrentChatID,
   setCurrentThread,
 } from "../../store/slices/narrativesSlice";
+import { formatTime } from "../../utils";
 
 const Sidebar: React.FC = () => {
   const dispatch = useDispatch();
@@ -27,15 +28,25 @@ const Sidebar: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    const inputDate = new Date(dateString);
     const now = new Date();
-    const diffTime = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    // Reset times to midnight for calendar day comparison
+    const input = new Date(
+      inputDate.getFullYear(),
+      inputDate.getMonth(),
+      inputDate.getDate(),
+    );
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const diffTime = today.getTime() - input.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) return "Today";
     if (diffDays === 1) return "Yesterday";
     if (diffDays < 7) return `${diffDays} days ago`;
-    return date.toLocaleDateString();
+
+    return inputDate.toLocaleDateString();
   };
 
   return (
@@ -60,7 +71,7 @@ const Sidebar: React.FC = () => {
 
           {loading ? (
             <>
-              {[...Array(3)].map((_, i) => (
+              {[...Array(5)].map((_, i) => (
                 <div
                   key={i}
                   className="w-full animate-pulse p-3 rounded-lg bg-gray-50 dark:bg-gray-800"
@@ -103,18 +114,20 @@ const Sidebar: React.FC = () => {
                     <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">
                       {thread.title}
                     </h4>
-                    <div className="flex items-center space-x-1 mt-1">
-                      <Clock className="h-3 w-3 text-gray-400 dark:text-gray-500" />
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {formatDate(thread.updatedAt)}
-                      </span>
-                    </div>
+
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 truncate">
                       {thread.messages[
                         thread.messages.length - 1
                       ]?.content.substring(0, 50)}
                       ...
                     </p>
+                    <div className="flex items-center justify-end space-x-1 mt-1">
+                      <Clock className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {formatDate(thread.updatedAt)},{" "}
+                        {formatTime(thread.updatedAt)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </button>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Sparkles, Settings, Send } from "lucide-react";
 import { RootState } from "../store";
@@ -11,6 +11,7 @@ import { NarrativeParameters } from "../types";
 import ChatMessage from "./common/ChatMessage";
 import NarrativeForm from "./forms/NarrativeForm";
 import LoadingSpinner from "./common/LoadingSpinner";
+import { useScrollToBottom } from "../hooks/useScrollToBottom";
 
 const NarrativeGenerator: React.FC = () => {
   const editable = true;
@@ -25,6 +26,9 @@ const NarrativeGenerator: React.FC = () => {
   const { remaining: credits } = useSelector(
     (state: RootState) => state.credits,
   );
+
+  const [messagesContainerRef, messagesEndRef, scrollToBottom] =
+    useScrollToBottom<HTMLDivElement>();
 
   const [showForm, setShowForm] = useState(false);
   const [narrativeType, setNarrativeType] = useState<"short" | "long">("short");
@@ -52,6 +56,7 @@ const NarrativeGenerator: React.FC = () => {
     // Generate narrative and consume credit
     try {
       setPrompt("");
+      scrollToBottom();
       await dispatch(continueNarrative({ prompt, chatId: chatId! }) as any);
     } catch (error) {
       console.error("Failed to generate narrative:", error);
@@ -80,6 +85,7 @@ const NarrativeGenerator: React.FC = () => {
 
     // Generate narrative and consume credit
     try {
+      scrollToBottom();
       await dispatch(generateNarrative({ parameters, type }) as any);
     } catch (error) {
       console.error("Failed to generate narrative:", error);
@@ -91,7 +97,10 @@ const NarrativeGenerator: React.FC = () => {
   return (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+      <div
+        ref={messagesContainerRef as React.Ref<HTMLDivElement>}
+        className="flex-1 overflow-y-auto px-6 py-4 space-y-4"
+      >
         {currentThread.length === 0 ? (
           <div className="h-full flex items-center justify-center">
             <div className="text-center max-w-md">
@@ -115,19 +124,23 @@ const NarrativeGenerator: React.FC = () => {
             </div>
           </div>
         ) : (
-          currentThread.map((message, idx) => {
-            const isLatest =
-              idx === currentThread.length - 1 &&
-              message.type === "assistant" &&
-              isStreaming;
-            return (
-              <ChatMessage
-                key={message.id}
-                message={message}
-                isLatest={isLatest}
-              />
-            );
-          })
+          <>
+            {currentThread.map((message, idx) => {
+              const isLatest =
+                idx === currentThread.length - 1 &&
+                message.type === "assistant" &&
+                isStreaming;
+              return (
+                <ChatMessage
+                  onStream={scrollToBottom}
+                  key={message.id}
+                  message={message}
+                  isLatest={isLatest}
+                />
+              );
+            })}
+            <div ref={messagesEndRef as React.Ref<HTMLDivElement>} />
+          </>
         )}
 
         {isGenerating && (
@@ -173,6 +186,7 @@ const NarrativeGenerator: React.FC = () => {
           <div className="flex items-center space-x-2">
             {editable && currentThread?.length > 1 ? (
               <button
+                disabled={isGenerating || isStreaming || credits <= 0}
                 type="submit"
                 className="inline-flex items-center justify-center px-4 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors duration-200"
               >
