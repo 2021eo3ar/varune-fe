@@ -22,6 +22,7 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
     const params = new URLSearchParams(window.location.search);
     const accessToken = params.get('accessToken');
     const userParam = params.get('user');
+    console.log(userParam)
     if (accessToken && userParam) {
       localStorage.setItem('auth_token', accessToken);
       try {
